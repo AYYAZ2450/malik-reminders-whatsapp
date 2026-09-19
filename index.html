@@ -57,6 +57,7 @@
       margin-top: 20px;
       color: #666;
       font-size: 14px;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -83,9 +84,76 @@
 
 </div>
 
+<div id="fb-root"></div>
+
 <script>
 
   let fbReady = false;
+
+  /*
+   * Listen for WhatsApp Embedded Signup events
+   */
+  window.addEventListener("message", function(event) {
+
+    if (
+      event.origin !== "https://www.facebook.com" &&
+      event.origin !== "https://web.facebook.com"
+    ) {
+      return;
+    }
+
+    let data = event.data;
+
+    try {
+      if (typeof data === "string") {
+        data = JSON.parse(data);
+      }
+    } catch (error) {
+      console.log("Non-JSON Meta message:", event.data);
+      return;
+    }
+
+    if (data && data.type === "WA_EMBEDDED_SIGNUP") {
+
+      console.log("WhatsApp Embedded Signup event:", data);
+
+      if (data.event === "FINISH") {
+
+        const phoneNumberId =
+          data.data?.phone_number_id || "";
+
+        const wabaId =
+          data.data?.waba_id || "";
+
+        console.log("Phone Number ID:", phoneNumberId);
+        console.log("WABA ID:", wabaId);
+
+        document.getElementById("status").textContent =
+          "WhatsApp Business connection completed successfully.";
+
+      }
+
+      else if (data.event === "CANCEL") {
+
+        console.log("Embedded Signup cancelled:", data);
+
+        document.getElementById("status").textContent =
+          "WhatsApp Business connection was cancelled.";
+
+      }
+
+      else if (data.event === "ERROR") {
+
+        console.error("Embedded Signup error:", data);
+
+        document.getElementById("status").textContent =
+          "An error occurred during WhatsApp Business connection.";
+
+      }
+    }
+
+  });
+
 
   /*
    * Facebook SDK initialization
@@ -95,25 +163,31 @@
     console.log("Facebook SDK initialization started.");
 
     FB.init({
-      appId: '28649176571361297',
+      appId: "28649176571361297",
       cookie: true,
       xfbml: true,
-      version: 'v26.0'
+      version: "v26.0"
     });
 
     fbReady = true;
 
-    const btn = document.getElementById('connectBtn');
-    const status = document.getElementById('status');
+    const btn =
+      document.getElementById("connectBtn");
+
+    const status =
+      document.getElementById("status");
 
     btn.disabled = false;
-    btn.textContent = 'Connect WhatsApp Business App';
 
-    status.textContent = 'Facebook SDK ready.';
+    btn.textContent =
+      "Connect WhatsApp Business App";
 
-    console.log('Facebook SDK initialized.');
-    console.log('App ID:', '28649176571361297');
-    console.log('FB.login:', typeof FB.login);
+    status.textContent =
+      "Facebook SDK ready.";
+
+    console.log("Facebook SDK initialized.");
+    console.log("App ID: 28649176571361297");
+    console.log("FB.login:", typeof FB.login);
 
   };
 
@@ -123,30 +197,47 @@
    */
   function loadFacebookSDK() {
 
-    if (document.getElementById('facebook-jssdk')) {
+    if (
+      document.getElementById("facebook-jssdk")
+    ) {
       return;
     }
 
-    const js = document.createElement('script');
+    const js =
+      document.createElement("script");
 
-    js.id = 'facebook-jssdk';
-    js.src = 'https://connect.facebook.net/en_US/sdk.js';
+    js.id = "facebook-jssdk";
+
+    js.src =
+      "https://connect.facebook.net/en_US/sdk.js";
 
     js.async = true;
     js.defer = true;
+    js.crossOrigin = "anonymous";
 
     js.onload = function () {
-      console.log('Facebook SDK script loaded.');
+
+      console.log(
+        "Facebook SDK script loaded."
+      );
+
     };
 
     js.onerror = function (error) {
-      console.error('Facebook SDK failed to load:', error);
 
-      document.getElementById('status').textContent =
-        'Facebook SDK failed to load.';
+      console.error(
+        "Facebook SDK failed to load:",
+        error
+      );
+
+      document.getElementById("status")
+        .textContent =
+        "Facebook SDK failed to load.";
+
     };
 
     document.head.appendChild(js);
+
   }
 
 
@@ -155,28 +246,40 @@
    */
   function fbLoginCallback(response) {
 
-    console.log('Facebook Login response:', response);
+    console.log(
+      "Facebook Login response:",
+      response
+    );
 
-    if (response && response.authResponse) {
+    if (
+      response &&
+      response.authResponse
+    ) {
 
-      console.log('Embedded Signup completed.');
-
-      document.getElementById('status').textContent =
-        'Facebook authorization completed.';
-
-      console.log(
-        'Authorization code:',
-        response.authResponse.code
-      );
-
-    } else {
+      const code =
+        response.authResponse.code;
 
       console.log(
-        'Embedded Signup cancelled or not completed.'
+        "Authorization code:",
+        code
       );
 
-      document.getElementById('status').textContent =
-        'Connection was cancelled or not completed.';
+      document.getElementById("status")
+        .textContent =
+        "Facebook authorization completed. Waiting for WhatsApp setup to finish.";
+
+    }
+
+    else {
+
+      console.log(
+        "Embedded Signup cancelled or not completed."
+      );
+
+      document.getElementById("status")
+        .textContent =
+        "Connection was cancelled or not completed.";
+
     }
   }
 
@@ -186,37 +289,54 @@
    */
   function launchWhatsAppSignup() {
 
-    console.log('Starting WhatsApp Embedded Signup...');
+    console.log(
+      "Starting WhatsApp Embedded Signup..."
+    );
 
     if (!fbReady) {
 
       console.error(
-        'Facebook SDK is not ready yet.'
+        "Facebook SDK is not ready yet."
       );
+
+      document.getElementById("status")
+        .textContent =
+        "Facebook SDK is not ready yet.";
 
       return;
     }
 
-    if (typeof FB.login !== 'function') {
+    if (
+      typeof FB === "undefined" ||
+      typeof FB.login !== "function"
+    ) {
 
       console.error(
-        'FB.login is not available.'
+        "FB.login is not available."
       );
+
+      document.getElementById("status")
+        .textContent =
+        "Facebook Login is not available.";
 
       return;
     }
 
     console.log(
-      'Using configuration ID:',
-      '1378291321181333'
+      "Using configuration ID:",
+      "1378291321181333"
     );
+
+    document.getElementById("status")
+      .textContent =
+      "Opening WhatsApp Business connection...";
 
     FB.login(
       fbLoginCallback,
       {
-        config_id: '1378291321181333',
+        config_id: "1378291321181333",
 
-        response_type: 'code',
+        response_type: "code",
 
         override_default_response_type: true,
 
@@ -224,9 +344,9 @@
           setup: {},
 
           featureType:
-            'whatsapp_business_app_onboarding',
+            "whatsapp_business_app_onboarding",
 
-          sessionInfoVersion: '3'
+          sessionInfoVersion: "3"
         }
       }
     );
@@ -237,9 +357,9 @@
    * Connect button
    */
   document
-    .getElementById('connectBtn')
+    .getElementById("connectBtn")
     .addEventListener(
-      'click',
+      "click",
       launchWhatsAppSignup
     );
 
