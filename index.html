@@ -5,112 +5,251 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Malik Reminders - WhatsApp Business Connection</title>
 
-  <script>
-    window.fbAsyncInit = function () {
-      FB.init({
-        appId: '28649176571361297',
-        cookie: true,
-        xfbml: true,
-        version: 'v26.0'
-      });
-
-      console.log('Facebook SDK initialized.');
-    };
-
-    function fbLoginCallback(response) {
-      console.log('Facebook Login response:', response);
-
-      if (response.authResponse) {
-        console.log('WhatsApp Embedded Signup completed.');
-        alert('WhatsApp Business connection completed.');
-      } else {
-        console.log('WhatsApp Embedded Signup was cancelled or not completed.');
-      }
-    }
-
-    function launchWhatsAppSignup() {
-      if (typeof FB === 'undefined') {
-        alert('Facebook SDK is not loaded yet. Please wait a few seconds and try again.');
-        return;
-      }
-
-      FB.login(fbLoginCallback, {
-        config_id: '1567633741071939',
-        response_type: 'code',
-        override_default_response_type: true,
-        extras: {
-          setup: {},
-          featureType: 'whatsapp_business_app_onboarding',
-          sessionInfoVersion: '3'
-        }
-      });
-    }
-  </script>
-
-  <script
-    async
-    defer
-    crossorigin="anonymous"
-    src="https://connect.facebook.net/en_US/sdk.js">
-  </script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f5f7fa;
+      margin: 0;
+      padding: 40px 20px;
       text-align: center;
-      padding: 60px 20px;
     }
 
     .container {
-      max-width: 650px;
-      margin: auto;
+      max-width: 800px;
+      margin: 80px auto;
       background: white;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+      padding: 50px 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
     h1 {
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 10px;
     }
 
     p {
       color: #555;
-      margin-bottom: 30px;
+      font-size: 18px;
     }
 
     button {
-      background: #25D366;
+      margin-top: 25px;
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: bold;
       color: white;
+      background: #25D366;
       border: none;
-      padding: 14px 25px;
-      font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
     }
 
-    button:hover {
-      background: #1ebe5d;
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #666;
+      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>Malik Reminders</h1>
+<div class="container">
 
-    <h2>WhatsApp Business Connection</h2>
+  <h1>Malik Reminders</h1>
 
-    <p>
-      Connect your WhatsApp Business App with Malik Reminders.
-    </p>
+  <h2>WhatsApp Business Connection</h2>
 
-    <button onclick="launchWhatsAppSignup()">
-      Connect WhatsApp Business App
-    </button>
+  <p>
+    Connect your WhatsApp Business App with Malik Reminders.
+  </p>
+
+  <button id="connectBtn" disabled>
+    Loading Facebook SDK...
+  </button>
+
+  <div id="status">
+    Initializing...
   </div>
+
+</div>
+
+<script>
+
+  let fbReady = false;
+
+  /*
+   * Facebook SDK initialization
+   */
+  window.fbAsyncInit = function () {
+
+    console.log("Facebook SDK initialization started.");
+
+    FB.init({
+      appId: '28649176571361297',
+      cookie: true,
+      xfbml: true,
+      version: 'v26.0'
+    });
+
+    fbReady = true;
+
+    const btn = document.getElementById('connectBtn');
+    const status = document.getElementById('status');
+
+    btn.disabled = false;
+    btn.textContent = 'Connect WhatsApp Business App';
+
+    status.textContent = 'Facebook SDK ready.';
+
+    console.log('Facebook SDK initialized.');
+    console.log('App ID:', '28649176571361297');
+    console.log('FB.login:', typeof FB.login);
+
+  };
+
+
+  /*
+   * Load Facebook JavaScript SDK
+   */
+  function loadFacebookSDK() {
+
+    if (document.getElementById('facebook-jssdk')) {
+      return;
+    }
+
+    const js = document.createElement('script');
+
+    js.id = 'facebook-jssdk';
+    js.src = 'https://connect.facebook.net/en_US/sdk.js';
+
+    js.async = true;
+    js.defer = true;
+
+    js.onload = function () {
+      console.log('Facebook SDK script loaded.');
+    };
+
+    js.onerror = function (error) {
+      console.error('Facebook SDK failed to load:', error);
+
+      document.getElementById('status').textContent =
+        'Facebook SDK failed to load.';
+    };
+
+    document.head.appendChild(js);
+  }
+
+
+  /*
+   * Facebook Login callback
+   */
+  function fbLoginCallback(response) {
+
+    console.log('Facebook Login response:', response);
+
+    if (response && response.authResponse) {
+
+      console.log('Embedded Signup completed.');
+
+      document.getElementById('status').textContent =
+        'Facebook authorization completed.';
+
+      console.log(
+        'Authorization code:',
+        response.authResponse.code
+      );
+
+    } else {
+
+      console.log(
+        'Embedded Signup cancelled or not completed.'
+      );
+
+      document.getElementById('status').textContent =
+        'Connection was cancelled or not completed.';
+    }
+  }
+
+
+  /*
+   * Launch WhatsApp Embedded Signup
+   */
+  function launchWhatsAppSignup() {
+
+    console.log('Starting WhatsApp Embedded Signup...');
+
+    if (!fbReady) {
+
+      console.error(
+        'Facebook SDK is not ready yet.'
+      );
+
+      return;
+    }
+
+    if (typeof FB.login !== 'function') {
+
+      console.error(
+        'FB.login is not available.'
+      );
+
+      return;
+    }
+
+    console.log(
+      'Using configuration ID:',
+      '1567633741071939'
+    );
+
+    FB.login(
+      fbLoginCallback,
+      {
+        config_id: '1567633741071939',
+
+        response_type: 'code',
+
+        override_default_response_type: true,
+
+        extras: {
+          setup: {},
+
+          featureType:
+            'whatsapp_business_app_onboarding',
+
+          sessionInfoVersion: '3'
+        }
+      }
+    );
+  }
+
+
+  /*
+   * Connect button
+   */
+  document
+    .getElementById('connectBtn')
+    .addEventListener(
+      'click',
+      launchWhatsAppSignup
+    );
+
+
+  /*
+   * Start Facebook SDK
+   */
+  loadFacebookSDK();
+
+</script>
 
 </body>
 </html>
