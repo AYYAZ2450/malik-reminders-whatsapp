@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malik Reminders - WhatsApp Business Connection</title>
+
+  <script>
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '28649176571361297',
+        cookie: true,
+        xfbml: true,
+        version: 'v26.0'
+      });
+
+      console.log('Facebook SDK initialized.');
+    };
+
+    function fbLoginCallback(response) {
+      console.log('Facebook Login response:', response);
+
+      if (response.authResponse) {
+        console.log('WhatsApp Embedded Signup completed.');
+        alert('WhatsApp Business connection completed.');
+      } else {
+        console.log('WhatsApp Embedded Signup was cancelled or not completed.');
+      }
+    }
+
+    function launchWhatsAppSignup() {
+      if (typeof FB === 'undefined') {
+        alert('Facebook SDK is not loaded yet. Please wait a few seconds and try again.');
+        return;
+      }
+
+      FB.login(fbLoginCallback, {
+        config_id: '1567633741071939',
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: {
+          setup: {},
+          featureType: 'whatsapp_business_app_onboarding',
+          sessionInfoVersion: '3'
+        }
+      });
+    }
+  </script>
+
+  <script
+    async
+    defer
+    crossorigin="anonymous"
+    src="https://connect.facebook.net/en_US/sdk.js">
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    button {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 14px 25px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1ebe5d;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Malik Reminders</h1>
+
+    <h2>WhatsApp Business Connection</h2>
+
+    <p>
+      Connect your WhatsApp Business App with Malik Reminders.
+    </p>
+
+    <button onclick="launchWhatsAppSignup()">
+      Connect WhatsApp Business App
+    </button>
+  </div>
+
+</body>
+</html>
